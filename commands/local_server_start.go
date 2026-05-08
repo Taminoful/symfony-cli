@@ -458,7 +458,7 @@ func waitForWorkers(projectDir string, pidFile *pid.PidFile) error {
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	if err := pidFile.Remove(); err != nil {
+	if err := os.Remove(pidFile.PidFile()); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 	return nil
