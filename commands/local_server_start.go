@@ -78,8 +78,13 @@ var localServerStartCmd = &console.Command{
 			ui.Warning("The local web server is already running")
 			return errors.WithStack(printWebServerStatus(projectDir))
 		}
-		if err := cleanupWebServerFiles(projectDir, pidFile); err != nil {
-			return err
+		// Only the parent cleans up stale files. The child skips this because
+		// the parent already ran cleanup and still holds the log file open;
+		// on Windows, deleting an open file is not allowed.
+		if !reexec.IsChild() {
+			if err := cleanupWebServerFiles(projectDir, pidFile); err != nil {
+				return err
+			}
 		}
 
 		homeDir := util.GetHomeDir()
